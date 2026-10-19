@@ -1,0 +1,25 @@
+name: OmniWrap TypeScript SDK CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify OmniWrap Artifact Manifest & Agentic Pack
+        run: |
+          test -f omniwrap-artifact.json
+          test -f openapi.json
+          test -f SKILL.md
+          test -f AGENTS.md
+          test -f llms.txt
+          test -f .mcp.json

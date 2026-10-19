@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "omniwrap": {
+      "command": "python",
+      "args": [
+        "./mcp/server.py"
+      ],
+      "env": {
+        "OMNIWRAP_BASE_URL": "https://omniwrap.net",
+        "OMNIWRAP_API_KEY": "${OMNIWRAP_API_KEY}"
+      }
+    }
+  }
+}

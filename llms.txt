@@ -1,0 +1,11 @@
+# OmniWrap TypeScript SDK (v1.0.0)
+
+> Deterministic TypeScript client, MCP tool definitions, and agentic skill pack for the OmniWrap Polyglot SDK Factory API (`https://omniwrap.net`).
+
+## Key Files
+- [README.md](./README.md): Package overview, installation (`npm install @jackai-dev/omniwrap-sdk`), and quickstart.
+- [api.md](./api.md): Complete operation-by-operation reference with verified TypeScript signatures.
+- [SKILL.md](./SKILL.md): Agent skill instructions for Claude Code, Cursor, Codex, and OpenCode.
+- [AGENTS.md](./AGENTS.md): Autonomy levels (`L1`/`L2`/`L3`), effect taxonomy, and agent safety rules.
+- [.mcp.json](./.mcp.json): Ready-to-mount Model Context Protocol (MCP) server configuration.
+- [openapi.json](./openapi.json): Canonical OpenAPI 3.1.1 specification.

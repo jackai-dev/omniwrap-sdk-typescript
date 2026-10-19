@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "omniwrap-knowledge": {
+      "command": "python",
+      "args": [
+        "server.py"
+      ]
+    }
+  }
+}

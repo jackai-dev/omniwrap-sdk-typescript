@@ -1,0 +1,4485 @@
+{
+  "openapi": "3.1.1",
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "info": {
+    "title": "OmniWrap",
+    "version": "1.0.0",
+    "description": "Official OmniWrap Polyglot SDK Factory, Agentic MCP Server, GitHub Multi-Repo Sync & Multi-Surface Control Plane API."
+  },
+  "servers": [
+    {
+      "url": "https://omniwrap.net",
+      "description": "OmniWrap Production Control Plane & BFF"
+    }
+  ],
+  "security": [
+    {
+      "SessionCookie": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "context",
+      "description": "Authorized OmniWrap context resources."
+    },
+    {
+      "name": "projects",
+      "description": "Authorized OmniWrap projects resources."
+    },
+    {
+      "name": "sources",
+      "description": "Authorized OmniWrap sources resources."
+    },
+    {
+      "name": "configurations",
+      "description": "Authorized OmniWrap configurations resources."
+    },
+    {
+      "name": "previews",
+      "description": "Authorized OmniWrap previews resources."
+    },
+    {
+      "name": "evidence",
+      "description": "Authorized OmniWrap evidence resources."
+    },
+    {
+      "name": "artifacts",
+      "description": "Authorized OmniWrap artifacts resources."
+    }
+  ],
+  "paths": {
+    "/v1/me/context": {
+      "get": {
+        "operationId": "getUserContext",
+        "summary": "getUserContext",
+        "description": "Read an existing JackAI authority projection. No account, session, role or entitlement is created here. Missing approved exchange is503 configuration_required.",
+        "tags": [
+          "context"
+        ],
+        "parameters": [],
+        "x-omniwrap-authorization": {
+          "resource": "context",
+          "action": "read",
+          "organizationRequired": true,
+          "projectRequired": false,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "reauthorize_then_repeat_read",
+        "responses": {
+          "200": {
+            "description": "Authorized resource snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserContext"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/v1/projects": {
+      "get": {
+        "operationId": "listProjects",
+        "summary": "listProjects",
+        "description": "List projects in the currently authorized JackAI organization before any project is selected. Ascending createdAt,id; stable snapshot pagination; no browser organization override.",
+        "tags": [
+          "projects"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "description": "Display-name substring filter, case-insensitive Unicode NFC matching. Bound to pagination cursor."
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "projects",
+          "action": "read",
+          "organizationRequired": true,
+          "projectRequired": false,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "reauthorize_then_repeat_read",
+        "responses": {
+          "200": {
+            "description": "Authorized resource snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          }
+        }
+      }
+    },
+    "/v1/projects/{projectId}": {
+      "get": {
+        "operationId": "getProject",
+        "summary": "getProject",
+        "description": "Read project and current immutable configuration reference. Its ETag also exists before first configuration activation.",
+        "tags": [
+          "projects"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/projectId"
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "projects",
+          "action": "read",
+          "organizationRequired": true,
+          "projectRequired": true,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "reauthorize_then_repeat_read",
+        "responses": {
+          "200": {
+            "description": "Authorized resource snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              },
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/StrongEtag"
+                },
+                "description": "Same opaque strong version as body.etag; immutable content or persisted snapshot revision."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/v1/projects/{projectId}/source-revisions": {
+      "post": {
+        "operationId": "createSourceRevision",
+        "summary": "createSourceRevision",
+        "description": "Admit a standalone OpenAPI 3.x JSON/YAML document as exact UTF-8 bytes; the public maximum is 268435456 bytes (256 MiB), with a lower per-instance limit configured by OMNIWRAP_SOURCE_MAX_BYTES (32 MiB by default). No Content-Encoding, multipart, base64 carrier decoding, archive, URL, Git, bundle or external reference fetching. Count actual streamed bytes, not characters or a decoded representation; Content-Length is advisory. Above the effective instance limit, reject with 413 before admission. The isolated engine then normalizes and records pending to valid/invalid. This 202 is byte admission only.",
+        "tags": [
+          "sources"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/projectId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/CsrfToken"
+          },
+          {
+            "name": "displayName",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "description": "Escaped display text only, never used as a filename or storage key; included in idempotency fingerprint."
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "sources",
+          "action": "write",
+          "organizationRequired": true,
+          "projectRequired": true,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "same_key_same_bytes_after_reconciliation",
+        "responses": {
+          "202": {
+            "description": "Accepted for asynchronous processing; not a completed effect.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              },
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/StrongEtag"
+                },
+                "description": "Same opaque strong version as body.etag; immutable content or persisted snapshot revision."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceRevision"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {}
+            },
+            "application/yaml": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/projects/{projectId}/source-revisions/{revisionId}": {
+      "get": {
+        "operationId": "getSourceRevision",
+        "summary": "getSourceRevision",
+        "description": "Read normalization state and bounded diagnostics. A GET never triggers normalization or generation.",
+        "tags": [
+          "sources"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/projectId"
+          },
+          {
+            "$ref": "#/components/parameters/revisionId"
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "sources",
+          "action": "read",
+          "organizationRequired": true,
+          "projectRequired": true,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "reauthorize_then_repeat_read",
+        "responses": {
+          "200": {
+            "description": "Authorized resource snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              },
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/StrongEtag"
+                },
+                "description": "Same opaque strong version as body.etag; immutable content or persisted snapshot revision."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceRevision"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/v1/projects/{projectId}/configuration-revisions": {
+      "post": {
+        "operationId": "createConfigurationRevision",
+        "summary": "createConfigurationRevision",
+        "description": "Atomically create and activate an immutable configuration revision against the current Project ETag, including first activation. Source must belong to this project and be valid. The engine alone supplies resolved configuration and plan fingerprints. Resolve this fixed profile through the isolated engine boundary; respond201 only once its configuration and plan are admitted. No generator runs inside the control API. Ambiguous transport outcomes require idempotent reconciliation.",
+        "tags": [
+          "configurations"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/projectId"
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/CsrfToken"
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "configurations",
+          "action": "write",
+          "organizationRequired": true,
+          "projectRequired": true,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "same_key_same_bytes_after_reconciliation",
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "412": {
+            "$ref": "#/components/responses/412"
+          },
+          "428": {
+            "$ref": "#/components/responses/428"
+          },
+          "201": {
+            "description": "Created and atomically activated after admitted engine resolution; response ETag identifies the immutable configuration. Reload Project to obtain the new Project ETag.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              },
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/StrongEtag"
+                },
+                "description": "Same opaque strong version as body.etag; immutable content or persisted snapshot revision."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigurationRevision"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigurationRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/projects/{projectId}/configuration-revisions/{revisionId}": {
+      "get": {
+        "operationId": "getConfigurationRevision",
+        "summary": "getConfigurationRevision",
+        "description": "Read immutable engine configuration projection.",
+        "tags": [
+          "configurations"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/projectId"
+          },
+          {
+            "$ref": "#/components/parameters/revisionId"
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "configurations",
+          "action": "read",
+          "organizationRequired": true,
+          "projectRequired": true,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "reauthorize_then_repeat_read",
+        "responses": {
+          "200": {
+            "description": "Authorized resource snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              },
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/StrongEtag"
+                },
+                "description": "Same opaque strong version as body.etag; immutable content or persisted snapshot revision."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigurationRevision"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/v1/projects/{projectId}/previews": {
+      "post": {
+        "operationId": "createPreview",
+        "summary": "createPreview",
+        "description": "Enqueue a durable preview of the current configuration against the Project ETag. Validate source/config ownership and readiness in the same transaction as job, idempotency record and initial event. Retry only a reconciled terminal predecessor with the same immutable inputs; unknown_result cannot authorize retry.",
+        "tags": [
+          "previews"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/projectId"
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/CsrfToken"
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "previews",
+          "action": "write",
+          "organizationRequired": true,
+          "projectRequired": true,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "same_key_same_bytes_after_reconciliation",
+        "responses": {
+          "202": {
+            "description": "Accepted for asynchronous processing; not a completed effect.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              },
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/StrongEtag"
+                },
+                "description": "Same opaque strong version as body.etag; immutable content or persisted snapshot revision."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preview"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "412": {
+            "$ref": "#/components/responses/412"
+          },
+          "428": {
+            "$ref": "#/components/responses/428"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewRequest"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listPreviews",
+        "summary": "listPreviews",
+        "description": "List authorized previews newest first by createdAt,id, with a cursor-bound high-watermark.",
+        "tags": [
+          "previews"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/projectId"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "previews",
+          "action": "read",
+          "organizationRequired": true,
+          "projectRequired": true,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "reauthorize_then_repeat_read",
+        "responses": {
+          "200": {
+            "description": "Authorized resource snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          }
+        }
+      }
+    },
+    "/v1/projects/{projectId}/previews/{previewId}": {
+      "get": {
+        "operationId": "getPreview",
+        "summary": "getPreview",
+        "description": "Read persisted state regardless of job success/failure. eventCursor and lastSequence form an atomic snapshot/replay boundary. primaryArtifacts discovers the admitted SDK package and its canonical manifests; reloading the snapshot preserves access after event retention expires. Null references are not missing success claims.",
+        "tags": [
+          "previews"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/projectId"
+          },
+          {
+            "$ref": "#/components/parameters/previewId"
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "previews",
+          "action": "read",
+          "organizationRequired": true,
+          "projectRequired": true,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "reauthorize_then_repeat_read",
+        "responses": {
+          "200": {
+            "description": "Authorized resource snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              },
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/StrongEtag"
+                },
+                "description": "Same opaque strong version as body.etag; immutable content or persisted snapshot revision."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preview"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/v1/projects/{projectId}/previews/{previewId}/cancel": {
+      "post": {
+        "operationId": "cancelPreview",
+        "summary": "cancelPreview",
+        "description": "Record cancellation intent against the Preview ETag. A repeated idempotent request replays its receipt before rechecking the old ETag. If completion already won the transaction return the unchanged terminal snapshot; acceptance never asserts process termination.",
+        "tags": [
+          "previews"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/projectId"
+          },
+          {
+            "$ref": "#/components/parameters/previewId"
+          },
+          {
+            "$ref": "#/components/parameters/IfMatch"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/CsrfToken"
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "previews",
+          "action": "write",
+          "organizationRequired": true,
+          "projectRequired": true,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "same_key_same_bytes_after_reconciliation",
+        "responses": {
+          "202": {
+            "description": "Accepted for asynchronous processing; not a completed effect.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancellationReceipt"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          },
+          "409": {
+            "$ref": "#/components/responses/409"
+          },
+          "413": {
+            "$ref": "#/components/responses/413"
+          },
+          "415": {
+            "$ref": "#/components/responses/415"
+          },
+          "412": {
+            "$ref": "#/components/responses/412"
+          },
+          "428": {
+            "$ref": "#/components/responses/428"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/projects/{projectId}/previews/{previewId}/events": {
+      "get": {
+        "operationId": "getPreviewEvents",
+        "summary": "getPreviewEvents",
+        "description": "Default application/json gives durable replay in ascending sequence, strictly after cursor. Accept:text/event-stream opens a bounded authorized stream; each preview_event has id:<opaque cursor> and one JSON data line matching PreviewEvent, max16384 UTF-8 frame bytes. Comment heartbeat every15s has no cursor. Reconnect reauthorizes and replays persisted events, duplicates must be deduplicated by id. A gap/expired cursor is410 before streaming; authorization denial after headers closes immediately without more data. No event may certify a proof by itself.",
+        "tags": [
+          "previews"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/projectId"
+          },
+          {
+            "$ref": "#/components/parameters/previewId"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/LastEventId"
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "previews",
+          "action": "read",
+          "organizationRequired": true,
+          "projectRequired": true,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "reauthorize_then_repeat_read",
+        "responses": {
+          "200": {
+            "description": "Authorized resource snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              },
+              "X-Accel-Buffering": {
+                "schema": {
+                  "type": "string",
+                  "const": "no"
+                },
+                "description": "Required for SSE; intermediary buffering disabled."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventPage"
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                },
+                "x-omniwrap-event-schema": {
+                  "$ref": "#/components/schemas/PreviewEvent"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          }
+        }
+      }
+    },
+    "/v1/projects/{projectId}/previews/{previewId}/logs": {
+      "get": {
+        "operationId": "getPreviewLogs",
+        "summary": "getPreviewLogs",
+        "description": "Read bounded redacted logs in ascending sequence. Filters are bound into the opaque cursor; no raw file access.",
+        "tags": [
+          "previews"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/projectId"
+          },
+          {
+            "$ref": "#/components/parameters/previewId"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "info",
+                "warning",
+                "error"
+              ]
+            }
+          },
+          {
+            "name": "phaseId",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            }
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "previews",
+          "action": "read",
+          "organizationRequired": true,
+          "projectRequired": true,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "reauthorize_then_repeat_read",
+        "responses": {
+          "200": {
+            "description": "Authorized resource snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          }
+        }
+      }
+    },
+    "/v1/projects/{projectId}/previews/{previewId}/evidence": {
+      "get": {
+        "operationId": "listPreviewEvidence",
+        "summary": "listPreviewEvidence",
+        "description": "List actual gate reports or explicit unavailability, ordered by gateId,id. No score or supported claim is inferred from generation completion.",
+        "tags": [
+          "evidence"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/projectId"
+          },
+          {
+            "$ref": "#/components/parameters/previewId"
+          },
+          {
+            "$ref": "#/components/parameters/Cursor"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "name": "gateId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "availability",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "available",
+                "missing",
+                "expired",
+                "hash_mismatch"
+              ]
+            }
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "evidence",
+          "action": "read",
+          "organizationRequired": true,
+          "projectRequired": true,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "reauthorize_then_repeat_read",
+        "responses": {
+          "200": {
+            "description": "Authorized resource snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidencePage"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          },
+          "410": {
+            "$ref": "#/components/responses/410"
+          }
+        }
+      }
+    },
+    "/v1/projects/{projectId}/evidence/{evidenceId}": {
+      "get": {
+        "operationId": "getEvidence",
+        "summary": "getEvidence",
+        "description": "Authorize project and report/preview parentage, then return a verified engine report projection or explicit missing/expired/hash_mismatch. No unvalidated report is rendered as passed.",
+        "tags": [
+          "evidence"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/projectId"
+          },
+          {
+            "$ref": "#/components/parameters/evidenceId"
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "evidence",
+          "action": "read",
+          "organizationRequired": true,
+          "projectRequired": true,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "reauthorize_then_repeat_read",
+        "responses": {
+          "200": {
+            "description": "Authorized resource snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              },
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/StrongEtag"
+                },
+                "description": "Same opaque strong version as body.etag; immutable content or persisted snapshot revision."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evidence"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    },
+    "/v1/projects/{projectId}/artifacts/{artifactId}": {
+      "get": {
+        "operationId": "getArtifact",
+        "summary": "getArtifact",
+        "description": "Read verified immutable metadata only. Knowing a hash is not authority; binary/signed downloads and active previews are disabled in this contract slice. IDs come from Preview.primaryArtifacts or Evidence.reportArtifactId; parentage and exact execution binding must match.",
+        "tags": [
+          "artifacts"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/projectId"
+          },
+          {
+            "$ref": "#/components/parameters/artifactId"
+          }
+        ],
+        "x-omniwrap-authorization": {
+          "resource": "artifacts",
+          "action": "read",
+          "organizationRequired": true,
+          "projectRequired": true,
+          "scopeMapping": "requires_approved_jackai_product_binding"
+        },
+        "x-omniwrap-retry": "reauthorize_then_repeat_read",
+        "responses": {
+          "200": {
+            "description": "Authorized resource snapshot.",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Never cache authority-scoped data."
+              },
+              "X-Correlation-ID": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                },
+                "description": "Server-owned bounded request correlation."
+              },
+              "ETag": {
+                "required": true,
+                "schema": {
+                  "$ref": "#/components/schemas/StrongEtag"
+                },
+                "description": "Same opaque strong version as body.etag; immutable content or persisted snapshot revision."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Artifact"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401"
+          },
+          "403": {
+            "$ref": "#/components/responses/403"
+          },
+          "404": {
+            "$ref": "#/components/responses/404"
+          },
+          "406": {
+            "$ref": "#/components/responses/406"
+          },
+          "422": {
+            "$ref": "#/components/responses/422"
+          },
+          "429": {
+            "$ref": "#/components/responses/429"
+          },
+          "500": {
+            "$ref": "#/components/responses/500"
+          },
+          "503": {
+            "$ref": "#/components/responses/503"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-omniwrap_session",
+        "description": "Opaque HttpOnly Secure SameSite=Lax host-only session reference. Sent by the browser automatically; never read or set through a Cookie header by generated JavaScript. BFF validates current JackAI authority. No local identity fallback."
+      }
+    },
+    "parameters": {
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_-]{16,128}$"
+        },
+        "description": "Required on every mutation. Scope = organization + project + operation; fingerprint includes raw body bytes, media type, resource and If-Match. Same key/content replays the same receipt; changed content is 409. Retained for 86400 seconds; reconcile an ambiguous outcome within retention before retry, never silently allocate a new key."
+      },
+      "IfMatch": {
+        "name": "If-Match",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/StrongEtag"
+        },
+        "description": "Exactly one strong ETag. Configuration activation and preview creation compare the current Project ETag, including first activation. Cancellation compares the Preview ETag. Stale = 412; absent = 428. Wildcard, weak tags and lists are rejected."
+      },
+      "CsrfToken": {
+        "name": "X-CSRF-Token",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[A-Za-z0-9_-]{32,256}$"
+        },
+        "description": "Session-bound synchronizer token from the trusted BFF bootstrap, independent of the unreadable session cookie. Validate same-origin Origin and CSRF before mutation. This contract does not implement or provision the session/CSRF exchange."
+      },
+      "Cursor": {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "$ref": "#/components/schemas/Cursor"
+        },
+        "description": "Opaque scope-bound continuation, never an offset or authority token. Expired/gap = 410 refresh_snapshot; invalid/tampered/wrong filters = 422. Denied objects remain uniform404."
+      },
+      "Limit": {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 50
+        },
+        "description": "Maximum page size; default 50."
+      },
+      "LastEventId": {
+        "name": "Last-Event-ID",
+        "in": "header",
+        "required": false,
+        "schema": {
+          "$ref": "#/components/schemas/Cursor"
+        },
+        "description": "SSE resume cursor; replay begins strictly after it. If query cursor also occurs the two must match, otherwise 422. Reauthorization is mandatory on reconnect."
+      },
+      "projectId": {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/OpaqueId"
+        },
+        "description": "Opaque identity; authorize organization/project and verify every parent relation before lookup or mutation. Knowledge of an ID grants no access."
+      },
+      "revisionId": {
+        "name": "revisionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/OpaqueId"
+        },
+        "description": "Opaque identity; authorize organization/project and verify every parent relation before lookup or mutation. Knowledge of an ID grants no access."
+      },
+      "previewId": {
+        "name": "previewId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/OpaqueId"
+        },
+        "description": "Opaque identity; authorize organization/project and verify every parent relation before lookup or mutation. Knowledge of an ID grants no access."
+      },
+      "evidenceId": {
+        "name": "evidenceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/OpaqueId"
+        },
+        "description": "Opaque identity; authorize organization/project and verify every parent relation before lookup or mutation. Knowledge of an ID grants no access."
+      },
+      "artifactId": {
+        "name": "artifactId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/OpaqueId"
+        },
+        "description": "Opaque identity; authorize organization/project and verify every parent relation before lookup or mutation. Knowledge of an ID grants no access."
+      }
+    },
+    "responses": {
+      "401": {
+        "description": "unauthenticated; recovery=authenticate. See the normative error mapping and operation retry policy.",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            },
+            "description": "Never cache authority-scoped data."
+          },
+          "X-Correlation-ID": {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            },
+            "description": "Server-owned bounded request correlation."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "unauthenticated"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "403": {
+        "description": "forbidden; recovery=none. See the normative error mapping and operation retry policy.",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            },
+            "description": "Never cache authority-scoped data."
+          },
+          "X-Correlation-ID": {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            },
+            "description": "Server-owned bounded request correlation."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "forbidden"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "not_found; recovery=none. See the normative error mapping and operation retry policy.",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            },
+            "description": "Never cache authority-scoped data."
+          },
+          "X-Correlation-ID": {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            },
+            "description": "Server-owned bounded request correlation."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "not_found"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "406": {
+        "description": "not_acceptable; recovery=none. See the normative error mapping and operation retry policy.",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            },
+            "description": "Never cache authority-scoped data."
+          },
+          "X-Correlation-ID": {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            },
+            "description": "Server-owned bounded request correlation."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "not_acceptable"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "409": {
+        "description": "idempotency_conflict/reconcile_idempotency, binding_conflict/refresh_snapshot, or retry_requires_reconciliation/refresh_snapshot. No additional effect.",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            },
+            "description": "Never cache authority-scoped data."
+          },
+          "X-Correlation-ID": {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            },
+            "description": "Server-owned bounded request correlation."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "idempotency_conflict",
+                            "binding_conflict",
+                            "retry_requires_reconciliation"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "410": {
+        "description": "cursor_expired; recovery=refresh_snapshot. See the normative error mapping and operation retry policy.",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            },
+            "description": "Never cache authority-scoped data."
+          },
+          "X-Correlation-ID": {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            },
+            "description": "Server-owned bounded request correlation."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "cursor_expired"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "412": {
+        "description": "precondition_failed; recovery=refresh_snapshot. See the normative error mapping and operation retry policy.",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            },
+            "description": "Never cache authority-scoped data."
+          },
+          "X-Correlation-ID": {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            },
+            "description": "Server-owned bounded request correlation."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "precondition_failed"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "413": {
+        "description": "request_too_large; recovery=none. See the normative error mapping and operation retry policy.",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            },
+            "description": "Never cache authority-scoped data."
+          },
+          "X-Correlation-ID": {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            },
+            "description": "Server-owned bounded request correlation."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "request_too_large"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "415": {
+        "description": "unsupported_media_type; recovery=none. See the normative error mapping and operation retry policy.",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            },
+            "description": "Never cache authority-scoped data."
+          },
+          "X-Correlation-ID": {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            },
+            "description": "Server-owned bounded request correlation."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "unsupported_media_type"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "422": {
+        "description": "invalid_request, source_not_valid or cursor_invalid; never reinterpret an invalid source as ready.",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            },
+            "description": "Never cache authority-scoped data."
+          },
+          "X-Correlation-ID": {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            },
+            "description": "Server-owned bounded request correlation."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "invalid_request",
+                            "source_not_valid",
+                            "cursor_invalid"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "428": {
+        "description": "precondition_required; recovery=refresh_snapshot. See the normative error mapping and operation retry policy.",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            },
+            "description": "Never cache authority-scoped data."
+          },
+          "X-Correlation-ID": {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            },
+            "description": "Server-owned bounded request correlation."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "precondition_required"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "429": {
+        "description": "rate_limited; recovery=retry_same_request. See the normative error mapping and operation retry policy.",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            },
+            "description": "Never cache authority-scoped data."
+          },
+          "X-Correlation-ID": {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            },
+            "description": "Server-owned bounded request correlation."
+          },
+          "Retry-After": {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 300
+            },
+            "description": "Optional integer seconds 1..300, required only when recovery=retry_same_request; must equal error.retryAfterSeconds."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "rate_limited"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "internal_error; recovery=reconcile_idempotency. See the normative error mapping and operation retry policy.",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            },
+            "description": "Never cache authority-scoped data."
+          },
+          "X-Correlation-ID": {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            },
+            "description": "Server-owned bounded request correlation."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "internal_error"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "503": {
+        "description": "configuration_required/configure_authority when approved JackAI exchange or product configuration is absent; authority_unavailable/retry_same_request on outage/timeout. No fallback identity, cached authorization or synthetic data.",
+        "headers": {
+          "Cache-Control": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            },
+            "description": "Never cache authority-scoped data."
+          },
+          "X-Correlation-ID": {
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/OpaqueId"
+            },
+            "description": "Server-owned bounded request correlation."
+          },
+          "Retry-After": {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 300
+            },
+            "description": "Optional integer seconds 1..300, required only when recovery=retry_same_request; must equal error.retryAfterSeconds."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ApiError"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "configuration_required",
+                            "authority_unavailable"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "OpaqueId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+      },
+      "Sha256": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "pattern": "^[0-9a-f]{64}$"
+      },
+      "Timestamp": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 35,
+        "format": "date-time"
+      },
+      "Cursor": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 512,
+        "pattern": "^[A-Za-z0-9_-]{16,512}$"
+      },
+      "StrongEtag": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 130,
+        "pattern": "^\"[A-Za-z0-9_-]{1,128}\"$"
+      },
+      "PreviewState": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "running",
+          "cancel_requested",
+          "completed",
+          "failed",
+          "cancelled",
+          "timed_out",
+          "unknown_result"
+        ]
+      },
+      "GateStatus": {
+        "type": "string",
+        "enum": [
+          "planned",
+          "passed",
+          "failed",
+          "skipped"
+        ]
+      },
+      "ProfileId": {
+        "type": "string",
+        "const": "openapi-typescript-preview/1"
+      },
+      "Diagnostic": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "severity",
+          "message",
+          "pointer"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-z][a-z0-9_.-]*$"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "pointer": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 0,
+                "maxLength": 1024,
+                "pattern": "^(|/.*)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "UserContext": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "authority",
+          "userId",
+          "organizationId",
+          "membershipRole",
+          "observedAt",
+          "expiresAt",
+          "productId"
+        ],
+        "properties": {
+          "authority": {
+            "type": "string",
+            "enum": [
+              "jackai",
+              "self_hosted_local_operator"
+            ]
+          },
+          "userId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "organizationId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "membershipRole": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "member",
+              "viewer"
+            ]
+          },
+          "observedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "expiresAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "productId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Projection of the currently authorized session. Under the managed profile the authority is jackai with a productId. Under the self-hosted local-operator profile the authority is self_hosted_local_operator, membershipRole is owner and productId is null; no JackAI identity is fabricated. No session token or cookie value is returned."
+      },
+      "Project": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "organizationId",
+          "displayName",
+          "createdAt",
+          "etag",
+          "currentConfigurationRevisionId"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "organizationId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "etag": {
+            "$ref": "#/components/schemas/StrongEtag"
+          },
+          "currentConfigurationRevisionId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "ConfigurationRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sourceRevisionId",
+          "profileId"
+        ],
+        "properties": {
+          "sourceRevisionId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "profileId": {
+            "$ref": "#/components/schemas/ProfileId"
+          }
+        },
+        "description": "Only this server-owned TypeScript profile is selectable. The Python engine resolves its configuration. No free-form settings, IR, paths, secrets or commands."
+      },
+      "ConfigurationRevision": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "projectId",
+          "sourceRevisionId",
+          "sourceSha256",
+          "profileId",
+          "resolvedConfigurationSha256",
+          "generationPlanInputFingerprint",
+          "createdAt",
+          "etag",
+          "executionBinding"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "sourceRevisionId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "sourceSha256": {
+            "$ref": "#/components/schemas/Sha256"
+          },
+          "profileId": {
+            "$ref": "#/components/schemas/ProfileId"
+          },
+          "resolvedConfigurationSha256": {
+            "$ref": "#/components/schemas/Sha256"
+          },
+          "generationPlanInputFingerprint": {
+            "$ref": "#/components/schemas/Sha256"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "etag": {
+            "$ref": "#/components/schemas/StrongEtag"
+          },
+          "executionBinding": {
+            "$ref": "#/components/schemas/ExecutionBinding"
+          }
+        },
+        "description": "Immutable projection of configuration_set_sha256 and GenerationPlan.input.fingerprint_sha256 (the APIContract fingerprint, not a digest of the whole plan). The Python engine alone computes these values; no web IR or parallel engine configuration."
+      },
+      "PreviewRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "configurationRevisionId"
+        ],
+        "properties": {
+          "configurationRevisionId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "retryOfPreviewId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          }
+        },
+        "description": "The referenced configuration must be current and its source valid. A retry requires an authoritative reconciled terminal predecessor and identical immutable inputs, and creates a new job with a new idempotency key."
+      },
+      "PreviewInputs": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sourceRevisionId",
+          "sourceSha256",
+          "configurationRevisionId",
+          "resolvedConfigurationSha256",
+          "generationPlanInputFingerprint",
+          "profileId",
+          "executionBinding"
+        ],
+        "properties": {
+          "sourceRevisionId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "sourceSha256": {
+            "$ref": "#/components/schemas/Sha256"
+          },
+          "configurationRevisionId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "resolvedConfigurationSha256": {
+            "$ref": "#/components/schemas/Sha256"
+          },
+          "generationPlanInputFingerprint": {
+            "$ref": "#/components/schemas/Sha256"
+          },
+          "profileId": {
+            "$ref": "#/components/schemas/ProfileId"
+          },
+          "executionBinding": {
+            "$ref": "#/components/schemas/ExecutionBinding"
+          }
+        }
+      },
+      "ObservedPhase": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "status": {
+            "$ref": "#/components/schemas/GateStatus"
+          }
+        },
+        "description": "An observed engine step; no inferred lifecycle state or synthetic progress percentage."
+      },
+      "Preview": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "projectId",
+          "state",
+          "inputs",
+          "attemptId",
+          "attemptNumber",
+          "createdAt",
+          "updatedAt",
+          "etag",
+          "retryOfPreviewId",
+          "phases",
+          "lastSequence",
+          "eventCursor",
+          "failureCode",
+          "primaryArtifacts"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "state": {
+            "$ref": "#/components/schemas/PreviewState"
+          },
+          "inputs": {
+            "$ref": "#/components/schemas/PreviewInputs"
+          },
+          "attemptId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "attemptNumber": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "etag": {
+            "$ref": "#/components/schemas/StrongEtag"
+          },
+          "retryOfPreviewId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "phases": {
+            "type": "array",
+            "maxItems": 64,
+            "items": {
+              "$ref": "#/components/schemas/ObservedPhase"
+            }
+          },
+          "lastSequence": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "eventCursor": {
+            "$ref": "#/components/schemas/Cursor"
+          },
+          "failureCode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "normalization_failed",
+                  "generation_failed",
+                  "verification_failed",
+                  "configuration_required",
+                  "worker_lost",
+                  "deadline_exceeded",
+                  "cancelled"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "primaryArtifacts": {
+            "$ref": "#/components/schemas/PrimaryArtifacts"
+          }
+        },
+        "description": "Authoritative persisted snapshot. completed means execution finished with admitted evidence; it does not mean gates passed, publication, or maturity. unknown_result forbids automatic retry.",
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "attemptNumber": {
+                  "const": 0
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "attemptId": {
+                  "type": "null"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "attemptId": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "enum": [
+                    "running",
+                    "completed",
+                    "unknown_result"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "attemptNumber": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "attemptId": {
+                  "$ref": "#/components/schemas/OpaqueId"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "CancelRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "reason"
+        ],
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "user_requested"
+            ]
+          }
+        }
+      },
+      "CancellationReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "preview",
+          "requestAccepted"
+        ],
+        "properties": {
+          "preview": {
+            "$ref": "#/components/schemas/Preview"
+          },
+          "requestAccepted": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "description": "Acknowledges a cancellation request only. A raced terminal snapshot may be returned unchanged. Only supervisor-confirmed termination permits cancelled/timed_out."
+      },
+      "PreviewEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "projectId",
+          "previewId",
+          "sequence",
+          "occurredAt",
+          "type",
+          "state",
+          "resourceId"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Cursor"
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "previewId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "occurredAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "state_changed",
+              "phase_observed",
+              "evidence_available",
+              "log_available"
+            ]
+          },
+          "state": {
+            "$ref": "#/components/schemas/PreviewState"
+          },
+          "resourceId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Notification to reload authorized resources, not a worker command or a proof of success. SSE id equals this scoped opaque cursor."
+      },
+      "LogEntry": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "projectId",
+          "previewId",
+          "sequence",
+          "occurredAt",
+          "level",
+          "phaseId",
+          "message"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "previewId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "occurredAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warning",
+              "error"
+            ]
+          },
+          "phaseId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          }
+        },
+        "description": "Bounded, redacted text before persistence; render escaped. No raw process stream, host path, command line or secret."
+      },
+      "EvidenceBinding": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sourceSha256",
+          "resolvedConfigurationSha256",
+          "generationPlanInputFingerprint",
+          "workspaceCanonicalManifestSha256",
+          "attemptId",
+          "executionBinding"
+        ],
+        "properties": {
+          "sourceSha256": {
+            "$ref": "#/components/schemas/Sha256"
+          },
+          "resolvedConfigurationSha256": {
+            "$ref": "#/components/schemas/Sha256"
+          },
+          "generationPlanInputFingerprint": {
+            "$ref": "#/components/schemas/Sha256"
+          },
+          "workspaceCanonicalManifestSha256": {
+            "$ref": "#/components/schemas/Sha256"
+          },
+          "attemptId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "executionBinding": {
+            "$ref": "#/components/schemas/ExecutionBinding"
+          }
+        }
+      },
+      "GateReport": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "gateId",
+          "status",
+          "required",
+          "targetId",
+          "networkAccess",
+          "summary",
+          "scope",
+          "limitations"
+        ],
+        "properties": {
+          "gateId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "status": {
+            "$ref": "#/components/schemas/GateStatus"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "targetId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "networkAccess": {
+            "type": "boolean"
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "limitations": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            }
+          }
+        },
+        "description": "Projection of an actual WorkspaceGate plus measured scope/limits from its report. The status vocabulary matches the engine. Hash equality alone never supplies a passed verdict."
+      },
+      "Artifact": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "projectId",
+          "previewId",
+          "binding",
+          "kind",
+          "displayName",
+          "mediaType",
+          "sizeBytes",
+          "sha256",
+          "createdAt",
+          "etag",
+          "download"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "projectId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "previewId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "binding": {
+            "$ref": "#/components/schemas/EvidenceBinding"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "sdk_file",
+              "sdk_package",
+              "artifact_manifest",
+              "workspace_manifest",
+              "verification_report"
+            ]
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "mediaType": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 104857600
+          },
+          "sha256": {
+            "$ref": "#/components/schemas/Sha256"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "etag": {
+            "$ref": "#/components/schemas/StrongEtag"
+          },
+          "download": {
+            "type": "string",
+            "const": "disabled"
+          }
+        },
+        "description": "Verified immutable metadata only. sha256 hashes exact bytes; workspaceCanonicalManifestSha256 has the existing engine canonical self-digest scope. No URL, filesystem path, executable preview or signed download grant."
+      },
+      "ErrorDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "pointer"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-z][a-z0-9_.-]*$"
+          },
+          "pointer": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 0,
+                "maxLength": 1024,
+                "pattern": "^(|/.*)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code",
+                  "correlationId",
+                  "details",
+                  "recovery",
+                  "retryAfterSeconds"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "unauthenticated"
+                    ]
+                  },
+                  "correlationId": {
+                    "$ref": "#/components/schemas/OpaqueId"
+                  },
+                  "details": {
+                    "type": "array",
+                    "maxItems": 16,
+                    "items": {
+                      "$ref": "#/components/schemas/ErrorDetail"
+                    }
+                  },
+                  "recovery": {
+                    "type": "string",
+                    "const": "authenticate"
+                  },
+                  "retryAfterSeconds": {
+                    "type": "null"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code",
+                  "correlationId",
+                  "details",
+                  "recovery",
+                  "retryAfterSeconds"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "configuration_required"
+                    ]
+                  },
+                  "correlationId": {
+                    "$ref": "#/components/schemas/OpaqueId"
+                  },
+                  "details": {
+                    "type": "array",
+                    "maxItems": 16,
+                    "items": {
+                      "$ref": "#/components/schemas/ErrorDetail"
+                    }
+                  },
+                  "recovery": {
+                    "type": "string",
+                    "const": "configure_authority"
+                  },
+                  "retryAfterSeconds": {
+                    "type": "null"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code",
+                  "correlationId",
+                  "details",
+                  "recovery",
+                  "retryAfterSeconds"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "authority_unavailable",
+                      "rate_limited"
+                    ]
+                  },
+                  "correlationId": {
+                    "$ref": "#/components/schemas/OpaqueId"
+                  },
+                  "details": {
+                    "type": "array",
+                    "maxItems": 16,
+                    "items": {
+                      "$ref": "#/components/schemas/ErrorDetail"
+                    }
+                  },
+                  "recovery": {
+                    "type": "string",
+                    "const": "retry_same_request"
+                  },
+                  "retryAfterSeconds": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 300
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code",
+                  "correlationId",
+                  "details",
+                  "recovery",
+                  "retryAfterSeconds"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "idempotency_conflict",
+                      "internal_error"
+                    ]
+                  },
+                  "correlationId": {
+                    "$ref": "#/components/schemas/OpaqueId"
+                  },
+                  "details": {
+                    "type": "array",
+                    "maxItems": 16,
+                    "items": {
+                      "$ref": "#/components/schemas/ErrorDetail"
+                    }
+                  },
+                  "recovery": {
+                    "type": "string",
+                    "const": "reconcile_idempotency"
+                  },
+                  "retryAfterSeconds": {
+                    "type": "null"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code",
+                  "correlationId",
+                  "details",
+                  "recovery",
+                  "retryAfterSeconds"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "binding_conflict",
+                      "retry_requires_reconciliation",
+                      "precondition_failed",
+                      "precondition_required",
+                      "cursor_expired"
+                    ]
+                  },
+                  "correlationId": {
+                    "$ref": "#/components/schemas/OpaqueId"
+                  },
+                  "details": {
+                    "type": "array",
+                    "maxItems": 16,
+                    "items": {
+                      "$ref": "#/components/schemas/ErrorDetail"
+                    }
+                  },
+                  "recovery": {
+                    "type": "string",
+                    "const": "refresh_snapshot"
+                  },
+                  "retryAfterSeconds": {
+                    "type": "null"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code",
+                  "correlationId",
+                  "details",
+                  "recovery",
+                  "retryAfterSeconds"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "forbidden",
+                      "not_found",
+                      "request_too_large",
+                      "unsupported_media_type",
+                      "invalid_request",
+                      "source_not_valid",
+                      "cursor_invalid",
+                      "not_acceptable"
+                    ]
+                  },
+                  "correlationId": {
+                    "$ref": "#/components/schemas/OpaqueId"
+                  },
+                  "details": {
+                    "type": "array",
+                    "maxItems": 16,
+                    "items": {
+                      "$ref": "#/components/schemas/ErrorDetail"
+                    }
+                  },
+                  "recovery": {
+                    "type": "string",
+                    "const": "none"
+                  },
+                  "retryAfterSeconds": {
+                    "type": "null"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "SourceRevision": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "projectId",
+              "displayName",
+              "mediaType",
+              "sizeBytes",
+              "sha256",
+              "createdAt",
+              "etag",
+              "state",
+              "diagnostics",
+              "diagnosticsTruncated",
+              "semanticIrSha256"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "projectId": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "displayName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "mediaType": {
+                "type": "string",
+                "enum": [
+                  "application/json",
+                  "application/yaml"
+                ]
+              },
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 268435456
+              },
+              "sha256": {
+                "$ref": "#/components/schemas/Sha256"
+              },
+              "createdAt": {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              "etag": {
+                "$ref": "#/components/schemas/StrongEtag"
+              },
+              "state": {
+                "type": "string",
+                "const": "pending"
+              },
+              "diagnostics": {
+                "type": "array",
+                "maxItems": 0,
+                "items": {
+                  "$ref": "#/components/schemas/Diagnostic"
+                }
+              },
+              "diagnosticsTruncated": {
+                "type": "boolean",
+                "const": false
+              },
+              "semanticIrSha256": {
+                "type": "null"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "projectId",
+              "displayName",
+              "mediaType",
+              "sizeBytes",
+              "sha256",
+              "createdAt",
+              "etag",
+              "state",
+              "diagnostics",
+              "diagnosticsTruncated",
+              "semanticIrSha256"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "projectId": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "displayName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "mediaType": {
+                "type": "string",
+                "enum": [
+                  "application/json",
+                  "application/yaml"
+                ]
+              },
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 268435456
+              },
+              "sha256": {
+                "$ref": "#/components/schemas/Sha256"
+              },
+              "createdAt": {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              "etag": {
+                "$ref": "#/components/schemas/StrongEtag"
+              },
+              "state": {
+                "type": "string",
+                "const": "valid"
+              },
+              "diagnostics": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "$ref": "#/components/schemas/Diagnostic"
+                }
+              },
+              "diagnosticsTruncated": {
+                "type": "boolean"
+              },
+              "semanticIrSha256": {
+                "$ref": "#/components/schemas/Sha256"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "projectId",
+              "displayName",
+              "mediaType",
+              "sizeBytes",
+              "sha256",
+              "createdAt",
+              "etag",
+              "state",
+              "diagnostics",
+              "diagnosticsTruncated",
+              "semanticIrSha256"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "projectId": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "displayName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "mediaType": {
+                "type": "string",
+                "enum": [
+                  "application/json",
+                  "application/yaml"
+                ]
+              },
+              "sizeBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 268435456
+              },
+              "sha256": {
+                "$ref": "#/components/schemas/Sha256"
+              },
+              "createdAt": {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              "etag": {
+                "$ref": "#/components/schemas/StrongEtag"
+              },
+              "state": {
+                "type": "string",
+                "const": "invalid"
+              },
+              "diagnostics": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "$ref": "#/components/schemas/Diagnostic"
+                },
+                "minItems": 1
+              },
+              "diagnosticsTruncated": {
+                "type": "boolean"
+              },
+              "semanticIrSha256": {
+                "type": "null"
+              }
+            }
+          }
+        ],
+        "description": "Exact-byte admission precedes isolated normalization. A pending revision is not usable for preview. Syntax/unsupported features produce invalid with real diagnostics; the raw source is never reserialized to compute sha256."
+      },
+      "Evidence": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "projectId",
+              "previewId",
+              "gateId",
+              "createdAt",
+              "etag",
+              "availability",
+              "binding",
+              "reportArtifactId",
+              "reportSha256",
+              "report"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "projectId": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "previewId": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "gateId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "createdAt": {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              "etag": {
+                "$ref": "#/components/schemas/StrongEtag"
+              },
+              "availability": {
+                "type": "string",
+                "const": "available"
+              },
+              "binding": {
+                "$ref": "#/components/schemas/EvidenceBinding"
+              },
+              "reportArtifactId": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "reportSha256": {
+                "$ref": "#/components/schemas/Sha256"
+              },
+              "report": {
+                "$ref": "#/components/schemas/GateReport"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "projectId",
+              "previewId",
+              "gateId",
+              "createdAt",
+              "etag",
+              "availability",
+              "report",
+              "reasonCode"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "projectId": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "previewId": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "gateId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "createdAt": {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              "etag": {
+                "$ref": "#/components/schemas/StrongEtag"
+              },
+              "availability": {
+                "type": "string",
+                "const": "missing"
+              },
+              "report": {
+                "type": "null"
+              },
+              "reasonCode": {
+                "type": "string",
+                "const": "report_missing"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "projectId",
+              "previewId",
+              "gateId",
+              "createdAt",
+              "etag",
+              "availability",
+              "report",
+              "reasonCode"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "projectId": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "previewId": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "gateId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "createdAt": {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              "etag": {
+                "$ref": "#/components/schemas/StrongEtag"
+              },
+              "availability": {
+                "type": "string",
+                "const": "expired"
+              },
+              "report": {
+                "type": "null"
+              },
+              "reasonCode": {
+                "type": "string",
+                "const": "retention_expired"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "projectId",
+              "previewId",
+              "gateId",
+              "createdAt",
+              "etag",
+              "availability",
+              "report",
+              "reasonCode"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "projectId": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "previewId": {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              "gateId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "createdAt": {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              "etag": {
+                "$ref": "#/components/schemas/StrongEtag"
+              },
+              "availability": {
+                "type": "string",
+                "const": "hash_mismatch"
+              },
+              "report": {
+                "type": "null"
+              },
+              "reasonCode": {
+                "type": "string",
+                "const": "integrity_failed"
+              }
+            }
+          }
+        ],
+        "description": "Unavailable evidence carries no inferred verdict. Available reports are admitted only after ownership, attempt, source/configuration, exact hash and canonical manifest validation."
+      },
+      "ProjectPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Project"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Cursor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Stable snapshot-bounded page. Cursors bind authority scope, resource, filters, sort and high-watermark. Opaque IDs/digests are never authorization."
+      },
+      "PreviewPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Preview"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Cursor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Stable snapshot-bounded page. Cursors bind authority scope, resource, filters, sort and high-watermark. Opaque IDs/digests are never authorization."
+      },
+      "EventPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/PreviewEvent"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Cursor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Stable snapshot-bounded page. Cursors bind authority scope, resource, filters, sort and high-watermark. Opaque IDs/digests are never authorization."
+      },
+      "LogPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/LogEntry"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Cursor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Stable snapshot-bounded page. Cursors bind authority scope, resource, filters, sort and high-watermark. Opaque IDs/digests are never authorization."
+      },
+      "EvidencePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            }
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Cursor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Stable snapshot-bounded page. Cursors bind authority scope, resource, filters, sort and high-watermark. Opaque IDs/digests are never authorization."
+      },
+      "ExecutionBinding": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "engineVersion",
+          "engineDistributionSha256",
+          "engineSourceRevision",
+          "workerImageDigest",
+          "toolchainManifestSha256",
+          "presetId",
+          "presetVersion",
+          "presetSha256",
+          "resolvedConfigurationSnapshotId",
+          "resolvedConfigurationSnapshotSha256"
+        ],
+        "properties": {
+          "engineVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "engineDistributionSha256": {
+            "$ref": "#/components/schemas/Sha256"
+          },
+          "engineSourceRevision": {
+            "type": "string",
+            "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+          },
+          "workerImageDigest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "toolchainManifestSha256": {
+            "$ref": "#/components/schemas/Sha256"
+          },
+          "presetId": {
+            "$ref": "#/components/schemas/ProfileId"
+          },
+          "presetVersion": {
+            "type": "string",
+            "const": "1.0.0"
+          },
+          "presetSha256": {
+            "type": "string",
+            "const": "16f61a87cee22df8071ea93e93e399d31f8bc4b65bfe385fc9635ac4c3f3003f"
+          },
+          "resolvedConfigurationSnapshotId": {
+            "$ref": "#/components/schemas/OpaqueId"
+          },
+          "resolvedConfigurationSnapshotSha256": {
+            "$ref": "#/components/schemas/Sha256"
+          }
+        },
+        "description": "Server-owned immutable execution identity. Snapshot ID references retained exact engine resolved_configurations bytes (including provenance); their byte hash is distinct from configuration_set_sha256. Preview and retry copy this binding exactly and load that snapshot without re-resolution. Engine/image/toolchain unavailability is configuration_required, never fallback to latest. No real engine or image is provisioned by this schema."
+      },
+      "PrimaryArtifacts": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sdkPackageId",
+          "sdkManifestId",
+          "workspaceManifestId"
+        ],
+        "properties": {
+          "sdkPackageId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sdkManifestId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "workspaceManifestId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OpaqueId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Discoverable logical outputs of the single TypeScript profile. Null means not admitted; each non-null ID is loaded through getArtifact and must match this preview, binding and expected kind. This is not a complete per-file browser; individual files remain inside the SDK package/canonical manifest. Evidence pages independently expose reportArtifactId."
+      }
+    }
+  },
+  "x-omniwrap-profile": {
+    "version": "1.0.0",
+    "id": "openapi-typescript-preview/1",
+    "status": "contract_only",
+    "runtimeQualified": false,
+    "bounds": {
+      "sourceBytes": 268435456,
+      "jsonRequestBytes": 65536,
+      "jsonResponseBytes": 1048576,
+      "artifactBytes": 104857600,
+      "pageItems": 100,
+      "defaultPageItems": 50,
+      "sseFrameBytes": 16384,
+      "sseMaxSeconds": 600,
+      "reauthorizeSeconds": 15,
+      "authorityTimeoutSeconds": 3,
+      "heartbeatSeconds": 15,
+      "cursorRetentionSeconds": 86400,
+      "idempotencyRetentionSeconds": 86400,
+      "inputGrantSeconds": 60,
+      "outputGrantSeconds": 60,
+      "workerLeaseSeconds": 120,
+      "jwksCacheSeconds": 300
+    },
+    "authority": {
+      "owner": "jackai",
+      "model": "managed_connected",
+      "sessionCookie": "__Host-omniwrap_session",
+      "cookieAttributes": [
+        "HttpOnly",
+        "Secure",
+        "SameSite=Lax",
+        "Path=/"
+      ],
+      "browserCredentials": "same-origin",
+      "scopeBindings": "configuration_required_until_approved",
+      "authorize": [
+        "organization",
+        "membership",
+        "product_entitlement",
+        "operation_scope",
+        "project_binding",
+        "step_up_when_required"
+      ],
+      "sseChecks": [
+        "opening",
+        "before_each_batch",
+        "each_idle_reauthorization_interval",
+        "reconnect"
+      ],
+      "missingExchange": "configuration_required",
+      "cacheMayEstablishAuthority": false
+    },
+    "terminalStates": [
+      "completed",
+      "failed",
+      "cancelled",
+      "timed_out"
+    ],
+    "transitions": [
+      {
+        "from": "queued",
+        "to": "running",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "lease_owned",
+          "inputs_validated"
+        ]
+      },
+      {
+        "from": "queued",
+        "to": "cancel_requested",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "cancellation_recorded"
+        ]
+      },
+      {
+        "from": "queued",
+        "to": "failed",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "failure_recorded",
+          "no_process_started"
+        ]
+      },
+      {
+        "from": "queued",
+        "to": "timed_out",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "deadline_elapsed",
+          "no_process_started"
+        ]
+      },
+      {
+        "from": "running",
+        "to": "cancel_requested",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "cancellation_recorded"
+        ]
+      },
+      {
+        "from": "running",
+        "to": "completed",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "process_tree_stopped",
+          "result_admitted"
+        ]
+      },
+      {
+        "from": "running",
+        "to": "failed",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "process_tree_stopped",
+          "failure_recorded"
+        ]
+      },
+      {
+        "from": "running",
+        "to": "timed_out",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "process_tree_stopped",
+          "deadline_elapsed"
+        ]
+      },
+      {
+        "from": "running",
+        "to": "unknown_result",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "ownership_or_result_uncertain"
+        ]
+      },
+      {
+        "from": "cancel_requested",
+        "to": "completed",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "process_tree_stopped",
+          "result_admitted"
+        ]
+      },
+      {
+        "from": "cancel_requested",
+        "to": "failed",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "process_tree_stopped",
+          "failure_recorded"
+        ]
+      },
+      {
+        "from": "cancel_requested",
+        "to": "timed_out",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "process_tree_stopped",
+          "deadline_elapsed"
+        ]
+      },
+      {
+        "from": "cancel_requested",
+        "to": "unknown_result",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "ownership_or_result_uncertain"
+        ]
+      },
+      {
+        "from": "cancel_requested",
+        "to": "cancelled",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "cancellation_recorded",
+          "process_tree_stopped"
+        ]
+      },
+      {
+        "from": "unknown_result",
+        "to": "completed",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "reconciled",
+          "process_tree_stopped",
+          "result_admitted"
+        ]
+      },
+      {
+        "from": "unknown_result",
+        "to": "failed",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "reconciled",
+          "process_tree_stopped",
+          "failure_recorded"
+        ]
+      },
+      {
+        "from": "unknown_result",
+        "to": "cancelled",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "reconciled",
+          "process_tree_stopped",
+          "cancellation_recorded"
+        ]
+      },
+      {
+        "from": "unknown_result",
+        "to": "timed_out",
+        "requires": [
+          "current_fence",
+          "state_and_event_atomic",
+          "reconciled",
+          "process_tree_stopped",
+          "deadline_elapsed"
+        ]
+      }
+    ],
+    "sourceTransitions": [
+      {
+        "from": "pending",
+        "to": "valid",
+        "requires": [
+          "normalization_admitted"
+        ]
+      },
+      {
+        "from": "pending",
+        "to": "invalid",
+        "requires": [
+          "diagnostics_admitted"
+        ]
+      }
+    ],
+    "deferred": {
+      "factoryOperationCount": 12,
+      "runtimeOwner": "V3-747",
+      "operations": [
+        "getFactoryProjectIdentity",
+        "getFactoryReadiness",
+        "listFactoryTasks",
+        "getFactoryTask",
+        "listFactoryAttempts",
+        "getFactoryAttempt",
+        "listFactoryLogs",
+        "listFactoryEvents",
+        "listFactoryEvidence",
+        "listFactoryApprovals",
+        "getFactoryResumeState",
+        "start_or_resume_disposable_factory_attempt"
+      ],
+      "other": [
+        "project_creation",
+        "signed_downloads",
+        "worker_protocol",
+        "prisma_projection",
+        "production_authority",
+        "generated_http_client",
+        "runtime_end_to_end_qualification"
+      ]
+    },
+    "engineSources": {
+      "semanticIr": "src/omniwrap/sdk/semantic_ir.py",
+      "resolvedConfiguration": "src/omniwrap/sdk/resolved_config.py",
+      "generationPlan": "src/omniwrap/sdk/generation_plan.py",
+      "artifactManifest": "src/omniwrap/sdk/schemas/artifact-manifest/v1.json",
+      "gates": "src/omniwrap/sdk/workspace.py"
+    },
+    "executionPreset": {
+      "id": "openapi-typescript-preview/1",
+      "version": "1.0.0",
+      "workspaceRequest": {
+        "renderers": [
+          "typescript"
+        ],
+        "execution_mode": "http_client",
+        "ecosystem": "auto",
+        "renderer_editions": {
+          "typescript": 1
+        },
+        "response_envelope_modes": {
+          "typescript": "preserve"
+        },
+        "verify": true,
+        "verify_package": true,
+        "verify_consumer": true,
+        "verify_mock_http": true,
+        "with_docs": true,
+        "with_tests": false,
+        "with_skill": false,
+        "with_mcp": false,
+        "with_api": false,
+        "with_ci_templates": false,
+        "allow_contract": false,
+        "allow_parent_refs": false,
+        "dry_run": false,
+        "replace_existing": false,
+        "reference_documents": [],
+        "local_reference_pins": {},
+        "compatibility_policies": [],
+        "target_settings": {
+          "typescript": {
+            "version": 1,
+            "edition": "legacy",
+            "package_name": null,
+            "resource_names": {},
+            "auth_environment_variable": null,
+            "envelope_policy": "preserve",
+            "documentation_output": "readme"
+          }
+        }
+      },
+      "supervisorPolicy": {
+        "generationNetwork": "none",
+        "verificationNetwork": "isolated_owned_loopback_only",
+        "dependencyAcquisition": "preprovisioned_verified_offline_cache_only",
+        "externalReferences": "reject",
+        "sourceForm": "standalone_utf8_openapi_json_or_yaml",
+        "workerBoundary": "rootless_linux_isolated_process_tree",
+        "missingPinnedEngineOrToolchain": "configuration_required"
+      },
+      "snapshotPolicy": "retain_exact_engine_resolved_configurations_and_replay_without_reresolution"
+    },
+    "engineBindingProvisioning": "configuration_required_until_exact_engine_image_toolchains_and_snapshot_store_are_admitted"
+  }
+}
